@@ -8,11 +8,17 @@ api = Client('api_2D2VjFKpXBMeCq7NonfGCU.5W7EAQ9HtOqPovhLjrXgOh')
 url = "https://docs.google.com/spreadsheets/d/1omg1_ZSCMlTLzwv9tON7pkGU10_rDOeJeKmTi_qtf-k/edit#gid=1081785221"
 csv_url = url.replace('/edit#gid=', '/export?format=csv&gid=')
 csv = pd.read_csv(csv_url)
+
+# will want to post all leads first and then add contacts afterwards
 leads_pd = csv[['Company', 'custom.Company Founded', 'custom.Company Revenue', 'Company US State']]
 leads_pd = leads_pd.drop_duplicates()
 leads_pd = leads_pd.fillna('')
 
-def lead_parse(x):
+# contacts will need to be identified by company, name, email and phone numbers
+contacts_pd = csv[['Company', 'Contact Name', 'Contact Emails', 'Contact Phones']]
+contacts_pd = contacts_pd.fillna('')
+
+def leadParse(x):
     lead_data = {
         'name': x['Company'],
         'custom.Company Founded': x['custom.Company Founded'] if x['custom.Company Founded'] else None, 
@@ -26,7 +32,7 @@ def lead_parse(x):
     return lead_data
 
 
-leads_pd['json'] = leads_pd.apply(lead_parse, axis=1)
+leads_pd['json'] = leads_pd.apply(leadParse, axis=1)
 
 def postLead(x):
     try:
@@ -35,23 +41,3 @@ def postLead(x):
         print("Cannot add lead to org because" + str(e))
 
 leads_pd['json'].apply(postLead)
-
-
-#grabbing leads
-lead_results = api.get('lead', params={
-    '_limit': 10,
-    '_fields': 'id,display_name,status_label',
-    'query': 'status:"Potential" sort:updated'
-})
-
-# looking at headers of lead_results; it is a dictionary
-#for i in lead_results:
-    #print(i)
-
-# grabbing only the data
-data = lead_results["data"]
-
-
-# printing the lead names/company names
-#for i in data:
-    #print(i["display_name"])
