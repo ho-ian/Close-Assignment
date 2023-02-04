@@ -17,7 +17,7 @@ csv = pd.read_csv(csv_url)
 
 # will want to post all leads first and then add contacts afterwards
 # posting leads will generate unique lead id's for each lead which we will match up to each contact later
-leads_pd = csv[['Company', 'custom.Company Founded', '', 'Company US State']]
+leads_pd = csv[['Company', 'custom.Company Founded', 'custom.Company Revenue', 'Company US State']]
 leads_pd = leads_pd.drop_duplicates()
 leads_pd = leads_pd.fillna('')
 
