@@ -1,8 +1,8 @@
 # Close-Assignment
 
-A. Explains your script’s logic to someone that is not overly technical. How did you eliminate the
+*A. Explains your script’s logic to someone that is not overly technical. How did you eliminate the
 invalid data? How did you find all the leads? How did you segment the leads by state and find
-the one with the most revenue?
+the one with the most revenue?*
 
 In this repository, you will find two files: sample_script.py and close.py. The main file we're working with is
 the sample_script.py file where the assignment is broken down into Part A, B, and C. I initially load the csv data
@@ -25,11 +25,13 @@ I was able to segment leads by state using a method called group_by as part of t
 The logic is to group the dataframe by their respective states and then calculating each state's max revenue
 while including the lead it came from.
 
-B. Explains how to run the script, including any dependencies that must be downloaded for the
-script to run.
+*B. Explains how to run the script, including any dependencies that must be downloaded for the
+script to run.*
 
-## Dependencies
+**Dependencies**
+
 `pip install closeio`
+
 `pip install pandas`
 
 The script is meant to be run on a terminal like bash and is meant to include two additional arguments for part B.
@@ -40,6 +42,7 @@ Example:
 ``python sample_script.py 12.12.1980 1.5.2008``
 
 Example Output:
+
 ``0       Digitube
 15         Yombu
 19         Oyope
