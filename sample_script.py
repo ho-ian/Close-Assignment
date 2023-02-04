@@ -4,10 +4,8 @@ import pandas as pd
 import re
 import time
 from datetime import datetime
-import argparse
-
-parser = argparse.ArgumentParser(description='Close API posting contacts and leads.')
-args = parser.parse_args()
+import datetime as dt
+import sys
 
 # grabbing csv file and reading it into a pandas dataframe
 # https://stackoverflow.com/a/50377166 was particularly helpful
@@ -57,3 +55,34 @@ contacts_pd['json'].apply(close.postContact)
 
 ### PART b ###
 
+# this only accepts dates with format '%d.%m.%Y'
+start = datetime.strptime(sys.argv[1],'%d.%m.%Y').date()
+end = datetime.strptime(sys.argv[2],'%d.%m.%Y').date()
+
+subset_pd = leads_pd[ leads_pd['date'].apply( lambda x: isinstance(x,dt.date)) ] 
+subset_pd = subset_pd[start <= subset_pd['date']]
+subset_pd = subset_pd[subset_pd['date'] <= end]
+
+# printing out the results in a quick and easy method https://stackoverflow.com/a/39923958
+print(subset_pd['Company'].to_string())
+
+
+### PART c ###
+
+state_pd = leads_pd.groupby('Company US State')
+agg_pd = state_pd.agg(leadCount=('Company', 'count'),
+                      totalrev=('revenue', 'sum'),
+                      medrev=('revenue', 'median')).reset_index()
+
+statelead_pd = leads_pd.loc[leads_pd.groupby('Company US State')['revenue'].idxmax()]
+statelead_pd = statelead_pd[['Company', 'Company US State']]
+
+agg_pd = agg_pd.merge(statelead_pd, on ='Company US State')
+agg_pd = agg_pd.rename({'Company US State': 'US State',
+                        'leadCount': 'Total number of leads',
+                        'totalrev':'Total revenue',
+                        'medrev':'Median revenue',
+                        'Company':'The lead with most revenue'}, axis = 1)
+
+# generating csv file
+agg_pd.to_csv("out.csv",index=False)

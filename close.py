@@ -78,4 +78,4 @@ def convertFloat(x):
         rev = x.replace('$','')
         rev = rev.replace(',','')
         return float(rev)
-    return x
+    return float(0)
