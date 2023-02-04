@@ -3,8 +3,13 @@ from datetime import datetime
 import pandas as pd
 import re
 
-api = Client('api_2D2VjFKpXBMeCq7NonfGCU.5W7EAQ9HtOqPovhLjrXgOh')
+## this is my module to declutter the main script
+## this file includes all the necessary functions I created and it initalizes the api client
 
+api = Client('YOUR_API_KEY')
+
+
+# function to parse each row of data into the format we need to then post the data to Close
 def leadParse(x):
     lead_data = {
         'name': x['Company'],
@@ -18,6 +23,7 @@ def leadParse(x):
     }
     return lead_data
 
+# function to post the lead data
 def postLead(x):
     try:
         api.post('lead', data=x)
@@ -25,8 +31,8 @@ def postLead(x):
         print("Cannot add lead to org because" + str(e))
 
 # validate and clean phone numbers
-# this is a very crude way to validate phone numbers, this misses the edge case with '??' in it because it doesn't check for it
-# in the future, if I had time, I would use regex to validate phone numbers more thoroughly
+# this is a very crude way to validate phone numbers, this misses the edge case with '??' in it because it doesn't check for special characters
+# In the future, if I had time, I would use regex to validate phone numbers more thoroughly, making sure to ignore "+" and "-"
 def validateNumber(x):
     phone = x.split('\n')
     number = []
@@ -35,8 +41,8 @@ def validateNumber(x):
             number.append({"phone": i})
     return number
 
-# validate and clean email addresses
-# with help from https://stackoverflow.com/a/68755011
+# validate and clean email addresses with help from https://stackoverflow.com/a/68755011
+# the intention of this function is to remove any emails that are not in the format of abcde@xyz.qwe
 def validateEmail(x):
     regex = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
     email = x.split('\n')
@@ -56,6 +62,7 @@ def contactParse(x):
     }
     return contact_data
 
+# function to post our Contacts
 def postContact(x):
     try:
         api.post('contact', data=x)
@@ -63,16 +70,19 @@ def postContact(x):
         print(x)
         print("Cannot add contact to org because" + str(e))
         
+# helper function that is used prior to posting contacts because we need to gather lead_ids
 def getLeads():
     return api.get('lead', params={
         '_fields': 'id,display_name'
     })
 
+# convert custom.Company Founded to date for part B calculations
 def convertDate(x):
     if x:
         return datetime.strptime(x,'%d.%m.%Y').date()
     return x
 
+# convert custom.Company Revenue to float for part C calculations
 def convertFloat(x):
     if x:
         rev = x.replace('$','')

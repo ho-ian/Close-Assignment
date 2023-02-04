@@ -17,7 +17,7 @@ csv = pd.read_csv(csv_url)
 
 # will want to post all leads first and then add contacts afterwards
 # posting leads will generate unique lead id's for each lead which we will match up to each contact later
-leads_pd = csv[['Company', 'custom.Company Founded', 'custom.Company Revenue', 'Company US State']]
+leads_pd = csv[['Company', 'custom.Company Founded', '', 'Company US State']]
 leads_pd = leads_pd.drop_duplicates()
 leads_pd = leads_pd.fillna('')
 
@@ -46,6 +46,7 @@ lead_data = lead_results["data"]
 lead_data = pd.json_normalize(lead_data)
 lead_data = lead_data.rename(columns={"display_name":"Company"})
 
+# merging dataframes so we have each Company/lead aligned with each lead_id
 contacts_pd = contacts_pd.merge(lead_data, on="Company")
 
 # parse and post all contacts
@@ -59,6 +60,7 @@ contacts_pd['json'].apply(close.postContact)
 start = datetime.strptime(sys.argv[1],'%d.%m.%Y').date()
 end = datetime.strptime(sys.argv[2],'%d.%m.%Y').date()
 
+# since there are some rows with empty entries for custom.Company Founded, i need to only include those that have real dates
 subset_pd = leads_pd[ leads_pd['date'].apply( lambda x: isinstance(x,dt.date)) ] 
 subset_pd = subset_pd[start <= subset_pd['date']]
 subset_pd = subset_pd[subset_pd['date'] <= end]
@@ -69,14 +71,19 @@ print(subset_pd['Company'].to_string())
 
 ### PART c ###
 
+# group leads by their respective states
 state_pd = leads_pd.groupby('Company US State')
+
+# aggregate the number of companies in each state, calculate total revenue, and calculate median revenue
 agg_pd = state_pd.agg(leadCount=('Company', 'count'),
                       totalrev=('revenue', 'sum'),
                       medrev=('revenue', 'median')).reset_index()
 
+# finding the company with the most revenue in grouped by state
 statelead_pd = leads_pd.loc[leads_pd.groupby('Company US State')['revenue'].idxmax()]
 statelead_pd = statelead_pd[['Company', 'Company US State']]
 
+# merging the dataframes together before generating the csv
 agg_pd = agg_pd.merge(statelead_pd, on ='Company US State')
 agg_pd = agg_pd.rename({'Company US State': 'US State',
                         'leadCount': 'Total number of leads',
@@ -86,3 +93,6 @@ agg_pd = agg_pd.rename({'Company US State': 'US State',
 
 # generating csv file
 agg_pd.to_csv("out.csv",index=False)
+
+# the csv file does not have the exact same format as the sample output; the data could be converted back to string and include "$" and ","
+# additionally, the columns could be reordered but I left it as is because I have already worked longer than I should have on this assignment
