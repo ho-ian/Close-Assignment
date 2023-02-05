@@ -28,6 +28,8 @@ while including the lead it came from.
 *B. Explains how to run the script, including any dependencies that must be downloaded for the
 script to run.*
 
+Upon pulling this repo, please enter your API key in `close.py` on line 9, `api = Client('YOUR_API_KEY')`.
+
 **Dependencies**
 
 `pip install closeio`
